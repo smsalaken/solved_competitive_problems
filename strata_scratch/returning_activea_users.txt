@@ -1,0 +1,21 @@
+
+https://platform.stratascratch.com/coding/10322-finding-user-purchases?code_type=1
+
+Medium difficulty: 
+Write a query that'll identify returning active users. A returning active user is a user that has made a second purchase within 7 days of any other of their purchases. Output a list of user_ids of these returning active users.
+
+
+
+select distinct user_id 
+from (
+    SELECT 
+        id,
+        user_id,
+        item,
+        created_at,
+        revenue,
+        LAG(created_at, 1) OVER(partition by user_id order by created_at asc) as prev_created_at,
+        created_at -  LAG(created_at, 1) OVER(partition by user_id order by created_at asc) as day_diff_from_last_purchase
+    FROM amazon_transactions
+) a
+where day_diff_from_last_purchase <= 7;

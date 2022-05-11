@@ -1,0 +1,22 @@
+
+problem: https://leetcode.com/problems/department-highest-salary/
+
+Solution:
+
+select 
+    Department
+    , Employee
+    , Salary
+from (
+select
+    d.name as "Department"
+    # , e.departmentID
+    , e.name as "Employee"
+    , e.salary as "Salary"
+    , max(e.salary) over(partition by  e.departmentId  order by e.salary desc) as max_salary
+    
+from employee e
+inner join department d on e.departmentId = d.id
+
+) temp
+where Salary = max_salary;

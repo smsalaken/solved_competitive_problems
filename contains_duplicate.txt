@@ -1,0 +1,26 @@
+class Solution:
+    def containsDuplicate(self, nums: List[int]) -> bool:
+        elems = {}
+        flag = False
+        for i in nums:
+            try:
+                elems[i] += 1
+                flag = True
+                break
+            except:
+                elems[i] = 1
+        return flag
+        
+
+
+# much simpler
+class Solution:
+    def containsDuplicate(self, nums: List[int]) -> bool:
+        elems = {}
+        for i in nums:
+            if i in elems.keys():
+                return True
+            else :
+                elems[i] = 1
+                
+        return False 

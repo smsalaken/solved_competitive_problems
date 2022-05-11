@@ -1,0 +1,81 @@
+
+******************
+Problem:
+******************
+
+https://platform.stratascratch.com/coding/10285-acceptance-rate-by-date?python=
+
+
+Acceptance Rate By Date
+What is the overall friend acceptance rate by date? Your output should have the rate of acceptances by the date the request was sent. Order by the earliest date to latest.
+
+Assume that each friend request starts by a user sending (i.e., user_id_sender) a friend request to another user (i.e., user_id_receiver) that's logged in the table with action = 'sent'. If the request is accepted, the table logs action = 'accepted'. If the request is not accepted, no record of action = 'accepted' is logged.
+
+table:
+	fb_friend_requests
+
+	user_id_sender		varchar
+	user_id_receiver	varchar
+	date 				datetime
+	action 				varchar
+
+
+************************
+solution: SQL
+************************
+
+	select 
+	    date,
+	    1.0 * count(accepted)/count(*) as percentage_acceptance
+	from (
+	select 
+	    a.date,
+	    a.user_id_sender,
+	    a.user_id_receiver,
+	    a.action as first_action,
+	    b.action as accepted
+	from fb_friend_requests a
+	left join (
+	    select 
+	        user_id_sender,
+	        user_id_receiver,
+	        action,
+	        date as accepted_date
+	    from fb_friend_requests
+	    where action = 'accepted'
+	    
+	) b
+	    on a.user_id_sender = b.user_id_sender and a.user_id_receiver = b.user_id_receiver
+	where a.action = 'sent'
+	) summary
+	group by date
+	order by date asc;
+	
+
+
+**********************
+solution: python
+**********************
+
+	# Import your libraries
+	import pandas as pd
+
+	# Start writing code
+	fb_friend_requests.head()
+
+	sent = fb_friend_requests.loc[fb_friend_requests['action'] == 'sent']
+
+	accepted = fb_friend_requests.loc[fb_friend_requests['action'] == 'accepted']
+	accepted.columns = ['user_id_sender', 'user_id_receiver', 'acceptance_date', 'acceptance_status']
+
+
+	combined = sent.merge(accepted, how = 'left', on = ['user_id_sender', 'user_id_receiver'])
+
+	r = combined.groupby(['date']).agg({'action' : lambda x: sum(x =='sent'), 'acceptance_status' : lambda x: sum(x == 'accepted')})
+
+	r['percentage_acceptance'] = r['acceptance_status']/r['action']
+
+	r.reset_index(inplace = True)
+
+	r[['date', 'percentage_acceptance']]
+

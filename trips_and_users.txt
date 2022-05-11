@@ -1,0 +1,106 @@
+
+Leetcode: https://leetcode.com/problems/trips-and-users/
+
+SQL Schema
+Table: Trips
+
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| id          | int      |
+| client_id   | int      |
+| driver_id   | int      |
+| city_id     | int      |
+| status      | enum     |
+| request_at  | date     |     
++-------------+----------+
+id is the primary key for this table.
+The table holds all taxi trips. Each trip has a unique id, while client_id and driver_id are foreign keys to the users_id at the Users table.
+Status is an ENUM type of ('completed', 'cancelled_by_driver', 'cancelled_by_client').
+ 
+
+Table: Users
+
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| users_id    | int      |
+| banned      | enum     |
+| role        | enum     |
++-------------+----------+
+users_id is the primary key for this table.
+The table holds all users. Each user has a unique users_id, and role is an ENUM type of ('client', 'driver', 'partner').
+banned is an ENUM type of ('Yes', 'No').
+ 
+
+The cancellation rate is computed by dividing the number of canceled (by client or driver) requests with unbanned users by the total number of requests with unbanned users on that day.
+
+Write a SQL query to find the cancellation rate of requests with unbanned users (both client and driver must not be banned) each day between "2013-10-01" and "2013-10-03". Round Cancellation Rate to two decimal points.
+
+Return the result table in any order.
+
+
+
+
+***********************
+solution:
+***********************
+
+# Write your MySQL query statement below
+select request_at as Day, round(count(distinct trip_cancelled) / count(distinct id),2) as "Cancellation Rate"
+from (
+select 
+    t.id,
+    t.request_at,
+    t.client_id,
+    t.driver_id,
+    t.status as trip_status,
+    case when t.status <> 'completed' then t.id end as trip_cancelled,
+    u.role as driver_role,
+    u.banned as driver_banned,
+    c.role as client_role,
+    c.banned as client_banned
+    
+    
+from trips t
+inner join users u 
+    on t.driver_id = u.users_id -- only taking cancellation by drivers here
+    and u.banned = 'No'
+
+inner join users c
+    on t.client_id = c.users_id
+    and c.banned = 'No'
+    
+where t.request_at between DATE '2013-10-01' and DATE '2013-10-03'
+    ) a
+group by request_at
+order by request_at;
+
+
+
+
+***********************
+linkedin post
+***********************
+
+
+One of the less popular SQL technique is joining the same table twice, but with different subsets. This technique can be incredibly powerful and eliminate the need to create intermediate/temp tables or CTEs. One example of these joins will be this leetcode problem (https://leetcode.com/problems/trips-and-users/). This is classified as a hard problem so expect some finer details in the question should you decide to attempt it. The problem asks to calculate daily cancellation rate for a ride sharing service where both the customer and driver are not banned.
+
+While I don't plan to paste my query, here are some tips that I have used to derive a fast solution:
+
+1. Get drivers and customer who are not banned by using a filtering condition in the join clause (NOT in the where clause). 
+2. Join the users table twice, with trips table, to seperate drivers and users
+3. Use a case statement to capture trip IDs when the trip is not cancelled
+4. Count the cancelled trips over total requested trips to calculate cancellation rate. This is done on top of a subquery where step 1-3 are performed.
+
+Follow this tips, and you will be within top 15% in terms of runtime. Happy solving !!
+
+
+
+
+
+
+
+
+
+

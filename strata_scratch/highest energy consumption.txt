@@ -1,0 +1,29 @@
+
+Medium
+
+Highest Energy Consumption
+https://platform.stratascratch.com/coding/10064-highest-energy-consumption?code_type=1
+
+
+Find the date with the highest total energy consumption from the Meta/Facebook data centers. Output the date along with the total energy consumption across all data centers.
+
+
+******************
+****  solution
+******************
+
+with summary as (
+    select date, sum(consumption) as total_energy
+    from (
+        select * from fb_eu_energy
+        union all 
+        select * from fb_asia_energy
+        union all
+    select * from fb_na_energy
+    ) a
+    group by date
+)
+select * 
+from summary
+where total_energy = (select max(total_energy) from summary)
+;

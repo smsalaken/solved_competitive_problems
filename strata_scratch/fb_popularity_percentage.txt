@@ -1,0 +1,40 @@
+hard
+
+https://platform.stratascratch.com/coding/10284-popularity-percentage?code_type=1
+
+Find the popularity percentage for each user on Meta/Facebook. The popularity percentage is defined as the total number of friends the user has divided by the total number of users on the platform, then converted into a percentage by multiplying by 100.
+Output each user along with their popularity percentage. Order records in ascending order by user id.
+The 'user1' and 'user2' column are pairs of friends.
+
+
+
+
+***********************************
+***          solution           ***
+*********************************** 
+
+with frnd as (
+select 
+    p1,
+    count(distinct p2) as num_frnd
+from ( 
+    select user1 as p1, user2 as p2 from facebook_friends
+    union
+    select user2 as p1, user1 as p2 from facebook_friends
+    ) a
+where p1 <> p2 -- making sure someone is counted as their own friend
+group by p1
+)
+, total_usr as (
+select user1 as usr from facebook_friends
+union 
+select user2 as usr from facebook_friends
+)
+
+select 
+    p1,
+    100.0 * num_frnd / (select count(distinct usr) from total_usr)
+from frnd
+order by p1
+
+;

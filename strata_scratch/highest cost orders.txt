@@ -1,0 +1,42 @@
+
+took 6 minutes
+Medium
+Highest Cost Orders
+
+
+Find the customer with the highest daily total order cost between 2019-02-01 to 2019-05-01. If customer had more than one order on a certain day, sum the order costs on daily basis. Output customer's first name, total cost of their items, and the date.
+ 
+ For simplicity, you can assume that every first name in the dataset is unique.
+
+https://platform.stratascratch.com/coding/9915-highest-cost-orders?code_type=1
+
+
+
+*********************
+**   solution
+*********************
+
+with summary as (
+select 
+    c.first_name, 
+    d.order_date,
+    sum(d.total_order_cost) as daily_total_order_cost
+from customers c
+inner join orders d on c.id = d.cust_id
+where d.order_date between DATE '2019-02-01' and DATE '2019-05-01'
+group by 1, 2
+)
+select 
+    first_name,
+    daily_total_order_cost,
+    order_date
+from summary 
+where daily_total_order_cost = (select max(daily_total_order_cost) from summary)
+    
+;
+
+
+questions I should ask / should have asked:
+	are the first names unique? (completely missed this before reading the last line of the question)
+	do they want one customer per day or just one customer across all day?
+	what happens if there are multiple customers with the highest total order value? Do I return all of them?
